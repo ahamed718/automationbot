@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternFlow Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 p-4 md:p-8">
+    <div class="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-md border border-slate-200">
+        <header class="border-b pb-4 mb-6">
+            <h1 class="text-2xl font-bold text-slate-900">InternFlow Assistant</h1>
+            <p class="text-sm text-slate-500">Automated intern task management & human-like review workflow.</p>
+        </header>
+
+        <form id="flowForm" onsubmit="handleGenerate(event)" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold mb-1">Intern Email</label>
+                <input type="email" id="email" required placeholder="intern@example.com"
+                    class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold mb-1">Requirement Document</label>
+                <textarea id="requirement" rows="3" placeholder="Paste requirement document text..."
+                    class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold mb-1">Past Review Notes</label>
+                <textarea id="notes" rows="2" placeholder="Feedback from previous review..."
+                    class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Next Review Date & Time</label>
+                    <input type="datetime-local" id="review_at" required
+                        class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Google Meet Link</label>
+                    <input type="url" id="meet" required placeholder="https://meet.google.com/abc-defg-hij"
+                        class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                </div>
+            </div>
+
+            <button type="submit" id="genBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition-colors">
+                Generate Milestone & Follow-up Email
+            </button>
+        </form>
+
+        <div id="statusBox" class="hidden mt-4 p-3 rounded-lg text-sm font-medium"></div>
+
+        <div id="outputSection" class="hidden mt-6 border-t pt-6 space-y-4">
+            <h2 class="text-xl font-bold text-slate-900">Generated Email Draft</h2>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Subject</label>
+                <input type="text" id="outSubject" class="w-full p-2.5 border rounded-lg bg-slate-50 font-medium" readonly>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Email Body</label>
+                <textarea id="outBody" rows="10" class="w-full p-3 border rounded-lg bg-slate-50 font-mono text-sm leading-relaxed" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function handleGenerate(e) {
+            e.preventDefault();
+            
+            const statusBox = document.getElementById('statusBox');
+            const genBtn = document.getElementById('genBtn');
+            const outputSection = document.getElementById('outputSection');
+
+            statusBox.className = "mt-4 p-3 rounded-lg text-sm bg-amber-100 text-amber-800 font-medium block";
+            statusBox.innerText = "⏳ Gemini AI is generating the email draft...";
+            genBtn.disabled = true;
+
+            const payload = {
+                email: document.getElementById('email').value.trim(),
+                requirement: document.getElementById('requirement').value.trim(),
+                notes: document.getElementById('notes').value.trim(),
+                review_at: document.getElementById('review_at').value,
+                meet: document.getElementById('meet').value.trim()
+            };
+
+            try {
+                const res = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    throw new Error(data.error || "Generation failed.");
+                }
+
+                document.getElementById('outSubject').value = data.subject || "";
+                document.getElementById('outBody').value = data.body || "";
+                outputSection.classList.remove('hidden');
+
+                statusBox.className = "mt-4 p-3 rounded-lg text-sm bg-emerald-100 text-emerald-800 font-medium block";
+                statusBox.innerText = "✅ Draft generated successfully!";
+            } catch (err) {
+                statusBox.className = "mt-4 p-3 rounded-lg text-sm bg-red-100 text-red-800 font-medium block";
+                statusBox.innerText = "❌ Error: " + err.message;
+            } finally {
+                genBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
