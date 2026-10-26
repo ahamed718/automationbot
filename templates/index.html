@@ -1,116 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternFlow Assistant</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InternFlow Assistant</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:#e9eeec;color:#12263a}
+  .letter{font-family:'Source Serif 4',Georgia,serif;line-height:1.7}
+  input,textarea{background:#fff;border:1px solid #b9c6c2;border-radius:6px;padding:.55rem .7rem;width:100%}
+  input:focus,textarea:focus,button:focus-visible{outline:3px solid #0f766e55;border-color:#0f766e}
+  label{font-weight:600;font-size:.9rem;display:block;margin-bottom:.25rem}
+  .btn{background:#0f766e;color:#fff;border-radius:6px;padding:.65rem 1.1rem;font-weight:600}
+  .btn:hover{background:#0b5c56}.btn:disabled{opacity:.5;cursor:wait}
+  .btn-alt{border:1px solid #12263a;border-radius:6px;padding:.6rem 1rem;font-weight:600}
+</style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 p-4 md:p-8">
-    <div class="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-md border border-slate-200">
-        <header class="border-b pb-4 mb-6">
-            <h1 class="text-2xl font-bold text-slate-900">InternFlow Assistant</h1>
-            <p class="text-sm text-slate-500">Automated intern task management & human-like review workflow.</p>
-        </header>
+<body class="min-h-screen">
+<header class="px-6 py-5 border-b border-[#b9c6c2] bg-[#12263a] text-white">
+  <h1 class="text-2xl font-extrabold tracking-tight">InternFlow Assistant</h1>
+  <p class="text-sm text-[#b9d7d2]">Turn requirements into friendly next steps, and keep every review on the calendar.</p>
+</header>
 
-        <form id="flowForm" onsubmit="handleGenerate(event)" class="space-y-4">
-            <div>
-                <label class="block text-sm font-semibold mb-1">Intern Email</label>
-                <input type="email" id="email" required placeholder="intern@example.com"
-                    class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold mb-1">Requirement Document</label>
-                <textarea id="requirement" rows="3" placeholder="Paste requirement document text..."
-                    class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"></textarea>
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold mb-1">Past Review Notes</label>
-                <textarea id="notes" rows="2" placeholder="Feedback from previous review..."
-                    class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"></textarea>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Next Review Date & Time</label>
-                    <input type="datetime-local" id="review_at" required
-                        class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Google Meet Link</label>
-                    <input type="url" id="meet" required placeholder="https://meet.google.com/abc-defg-hij"
-                        class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-                </div>
-            </div>
-
-            <button type="submit" id="genBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition-colors">
-                Generate Milestone & Follow-up Email
-            </button>
-        </form>
-
-        <div id="statusBox" class="hidden mt-4 p-3 rounded-lg text-sm font-medium"></div>
-
-        <div id="outputSection" class="hidden mt-6 border-t pt-6 space-y-4">
-            <h2 class="text-xl font-bold text-slate-900">Generated Email Draft</h2>
-            <div>
-                <label class="block text-sm font-semibold mb-1">Subject</label>
-                <input type="text" id="outSubject" class="w-full p-2.5 border rounded-lg bg-slate-50 font-medium" readonly>
-            </div>
-            <div>
-                <label class="block text-sm font-semibold mb-1">Email Body</label>
-                <textarea id="outBody" rows="10" class="w-full p-3 border rounded-lg bg-slate-50 font-mono text-sm leading-relaxed" readonly></textarea>
-            </div>
-        </div>
+<main class="max-w-7xl mx-auto p-4 lg:p-6 grid lg:grid-cols-2 gap-6">
+  <!-- Staff inputs -->
+  <section class="space-y-4">
+    <div>
+      <label for="email">Intern email</label>
+      <div class="flex gap-2">
+        <input id="email" type="email" placeholder="intern@example.com">
+        <button id="loadBtn" class="btn-alt whitespace-nowrap" type="button">Load progress</button>
+      </div>
     </div>
+    <div>
+      <label for="requirement">Requirement document</label>
+      <textarea id="requirement" rows="7" placeholder="Paste the project requirements. Only needed for a new intern; later cycles reuse the saved tasks."></textarea>
+      <input id="file" type="file" accept=".txt,.md" class="mt-2 text-sm !border-dashed">
+    </div>
+    <div>
+      <label for="notes">Past review notes</label>
+      <textarea id="notes" rows="4" placeholder="What went well? What needs work? Leave blank for a first review."></textarea>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div><label for="reviewAt">Next review date and time</label><input id="reviewAt" type="datetime-local"></div>
+      <div><label for="meet">Google Meet link</label><input id="meet" type="url" placeholder="https://meet.google.com/abc-defg-hij"></div>
+    </div>
+    <button id="genBtn" class="btn" type="button">Write the follow-up email</button>
+    <p id="status" role="status" class="text-sm min-h-[1.25rem]"></p>
 
-    <script>
-        async function handleGenerate(e) {
-            e.preventDefault();
-            
-            const statusBox = document.getElementById('statusBox');
-            const genBtn = document.getElementById('genBtn');
-            const outputSection = document.getElementById('outputSection');
+    <div id="progress" class="hidden bg-white rounded-lg border border-[#b9c6c2] p-4">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="font-semibold">Task progress</h2><span id="count" class="text-sm text-[#4b6070]"></span>
+      </div>
+      <div class="h-2 bg-[#dde6e3] rounded mb-3"><div id="bar" class="h-2 bg-[#0f766e] rounded transition-all" style="width:0"></div></div>
+      <ul id="taskList" class="space-y-2 text-sm"></ul>
+    </div>
+  </section>
 
-            statusBox.className = "mt-4 p-3 rounded-lg text-sm bg-amber-100 text-amber-800 font-medium block";
-            statusBox.innerText = "⏳ Gemini AI is generating the email draft...";
-            genBtn.disabled = true;
+  <!-- Live preview -->
+  <section>
+    <div class="bg-white rounded-lg border border-[#b9c6c2] p-5 lg:sticky lg:top-4">
+      <h2 class="font-semibold mb-3">Email draft</h2>
+      <div id="empty" class="text-[#4b6070] py-16 text-center">Fill in the form and your draft will appear here. You can edit it before sending.</div>
+      <div id="draft" class="hidden space-y-3">
+        <div><label for="to">To</label><input id="to"></div>
+        <div><label for="subject">Subject</label><input id="subject"></div>
+        <div><label for="body">Message</label><textarea id="body" rows="18" class="letter"></textarea></div>
+        <div class="flex flex-wrap gap-2">
+          <button id="sendBtn" class="btn" type="button">Send email</button>
+          <button id="copyBtn" class="btn-alt" type="button">Copy draft</button>
+        </div>
+        <p class="text-xs text-[#4b6070]">{% if smtp_ready %}Sending is enabled.{% else %}Sending is off: add SMTP settings to .env, or copy the draft.{% endif %}</p>
+      </div>
+    </div>
+  </section>
+</main>
 
-            const payload = {
-                email: document.getElementById('email').value.trim(),
-                requirement: document.getElementById('requirement').value.trim(),
-                notes: document.getElementById('notes').value.trim(),
-                review_at: document.getElementById('review_at').value,
-                meet: document.getElementById('meet').value.trim()
-            };
+<script>
+const $ = id => document.getElementById(id);
+const say = (msg, bad=false) => { $('status').textContent = msg; $('status').style.color = bad ? '#b42318' : '#0f766e'; };
 
-            try {
-                const res = await fetch('/api/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+// POST/GET helper that surfaces server error messages
+async function api(url, opts) {
+  const res = await fetch(url, opts);
+  const data = await res.json().catch(() => ({error: 'Unexpected server response.'}));
+  if (!res.ok) throw new Error(data.error || 'Request failed.');
+  return data;
+}
+const post = (url, body) => api(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
 
-                const data = await res.json();
-                
-                if (!res.ok) {
-                    throw new Error(data.error || "Generation failed.");
-                }
+function renderTasks(tasks) {
+  if (!tasks || !tasks.length) { $('progress').classList.add('hidden'); return; }
+  const done = tasks.filter(t => t.status === 'done').length;
+  $('progress').classList.remove('hidden');
+  $('count').textContent = `${done} of ${tasks.length} done`;
+  $('bar').style.width = (done / tasks.length * 100) + '%';
+  $('taskList').innerHTML = '';
+  tasks.forEach(t => {
+    const li = document.createElement('li');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.checked = t.status === 'done'; cb.className = '!w-auto mt-1 mr-2';
+    cb.onchange = async () => {
+      try { await post(`/api/task/${t.id}`, {status: cb.checked ? 'done' : 'pending'}); loadProgress(); }
+      catch (e) { say(e.message, true); }
+    };
+    const txt = document.createElement('span');  // textContent keeps AI output safe from HTML injection
+    txt.innerHTML = '<strong></strong><br><span class="text-[#4b6070]"></span>';
+    txt.querySelector('strong').textContent = t.title;
+    txt.querySelector('span').textContent = t.detail || '';
+    li.className = 'flex'; li.append(cb, txt); $('taskList').append(li);
+  });
+}
 
-                document.getElementById('outSubject').value = data.subject || "";
-                document.getElementById('outBody').value = data.body || "";
-                outputSection.classList.remove('hidden');
+async function loadProgress() {
+  const email = $('email').value.trim();
+  if (!email) return say('Enter the intern email first.', true);
+  try { const d = await api('/api/candidate?email=' + encodeURIComponent(email)); renderTasks(d.tasks);
+        say(d.tasks.length ? 'Progress loaded.' : 'New intern. Paste the requirement document to begin.'); }
+  catch (e) { say(e.message, true); }
+}
 
-                statusBox.className = "mt-4 p-3 rounded-lg text-sm bg-emerald-100 text-emerald-800 font-medium block";
-                statusBox.innerText = "✅ Draft generated successfully!";
-            } catch (err) {
-                statusBox.className = "mt-4 p-3 rounded-lg text-sm bg-red-100 text-red-800 font-medium block";
-                statusBox.innerText = "❌ Error: " + err.message;
-            } finally {
-                genBtn.disabled = false;
-            }
-        }
-    </script>
+$('loadBtn').onclick = loadProgress;
+$('file').onchange = async e => { const f = e.target.files[0]; if (f) $('requirement').value = await f.text(); };
+
+$('genBtn').onclick = async () => {
+  $('genBtn').disabled = true; say('Writing your draft. This takes a few seconds...');
+  try {
+    const d = await post('/api/generate', {
+      email: $('email').value, requirement: $('requirement').value, notes: $('notes').value,
+      review_at: $('reviewAt').value, meet: $('meet').value});
+    renderTasks(d.tasks);
+    if (d.complete) { say(d.message); return; }
+    $('to').value = d.to; $('subject').value = d.subject; $('body').value = d.body;
+    $('empty').classList.add('hidden'); $('draft').classList.remove('hidden');
+    say('Draft ready. Review it, then send.');
+  } catch (e) { say(e.message, true); }
+  finally { $('genBtn').disabled = false; }
+};
+
+$('sendBtn').onclick = async () => {
+  $('sendBtn').disabled = true;
+  try { await post('/api/send', {to:$('to').value, subject:$('subject').value, body:$('body').value}); say('Email sent.'); }
+  catch (e) { say(e.message, true); }
+  finally { $('sendBtn').disabled = false; }
+};
+
+$('copyBtn').onclick = async () => {
+  try { await navigator.clipboard.writeText(`Subject: ${$('subject').value}\n\n${$('body').value}`); say('Draft copied.'); }
+  catch { say('Copy failed. Select the text and copy it manually.', true); }
+};
+</script>
 </body>
 </html>
